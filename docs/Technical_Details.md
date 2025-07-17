@@ -15,6 +15,20 @@ They are divided into 16 sectors (0 to 15) with each sector containing four bloc
 The details below pertain to cards issued by the University of Duisburg-Essen.
 I do not have details on other Intercards, but feel free to open an issue or submit a pull request if you have one and are ready to collaborate.
 
+## Card types
+
+I know of four types of cards:
+
+- Student cards
+- Employee cards
+- Cash cards
+- Library cards
+
+While cash cards are fully supported by this application, member number parsing fails (Parsing error 016) for now.
+Implementation for proper detection of cash cards will be implemented in the future.
+
+Library cards have not been tested yet.
+
 ## Identification
 
 The app utilizes Block 1 and 2 of Sector 0 to determine the authenticity of the card, as they (or so I assume) contain the necessary identification data for the University of Duisburg-Essen:
@@ -35,7 +49,7 @@ It is the decimal value of the UID bytes if they were written in reverse order (
 
 The member type is stored at Sector 1, in the first and third byte of Block 2.
 For students it is set to `0x02`, and for employees it is set to `0x03`.
-Given that the university also issues cash cards and library cards, it is possible that there are additional member types.
+Given that the university also issues library cards which cannot be used for payment, it is possible that there is an additional member type.
 
 ## Balance
 
@@ -64,11 +78,22 @@ The member number locations are as follows:
 - Sector 8 Block 0
 - Sector 9 Block 0
 
+Here is an overview regarding the member number's presence for different card types:
+
+| Sector | **Student** | **Employee** | **Cash** | **Library** |
+|----------|-------------|--------------|----------|-------------|
+| 5 | ✔️ | ✔️ |  ❌ | ❔ |
+| 6 |  ✔️ | ✔️ |  ✔️ | ❔ |
+| 8 |  ✔️ | ✔️ |  ❌ | ❔ |
+| 9 |  ✔️ | ✔️ |  ❌ | ❔ |
+
+(✔️: Present; ❌: set to ASCII zeros ;❔: Not analysed yet.)
+
 The member number has a length of 12 Bytes.
 It is saved in reversed order, is '0'-padded and ASCII encoded.
 
 This application examines all four occurrences and assumes that the parsing of this number was successful if all four instances are identical.
-If this is not the case, the first occurrence is used.
+If this is not the case, the first occurrence is used and the member number parsing is flagged as faulty.
 
 ## Can I perform modifications to my card with this application (e.g. changing my balance)?
 
